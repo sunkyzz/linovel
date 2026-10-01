@@ -1,5 +1,6 @@
 import re
 import threading
+from urllib.parse import urljoin
 
 from novel import AbstractNovel
 
@@ -157,8 +158,10 @@ class Wenku(AbstractNovel):
         self.find_date(soup)
 
     def get_volumes_url(self, soup):
-        url = re.search(r'<a href="(https://www.wenku8.net/novel/.*?index.htm)">小说目录</a>', str(soup)).group(1)
-        return url
+        match = re.search(r'<a href="((?:https?://www\.wenku8\.net)?/novel/.*?index\.htm)">小说目录</a>', str(soup))
+        if not match:
+            raise RuntimeError('Catalog link not found, page layout may have changed')
+        return urljoin(self.url, match.group(1))
 
     def extract_volumes(self, soup):
         """parse the novle content page, start parse each volume"""
